@@ -20,16 +20,28 @@ set opt(cp)             ""                     	;# connection pattern file
 set opt(sc)     	"ns2mobility.tcl"    	       	;# node movement file. 
 
 
-set opt(stop)   	200.0                         	;# time of simulation end
+set opt(stop)   	50.0                         	;# time of simulation end
 
 set opt(ftp1-start)     100.0
+
+
+
 
 #set num_bs_nodes       2  ; this is not really used here.
 source "Lane.sce.tcl"
 
 # mobile nodes257 nb 78 nw 78   nam 1.5GB  tr 2.1GB. time 40m
 
-# ======================================================================
+#---------------------------energy model------------
+set opt(engmodel) EnergyModel ;#energy model
+set opt(initeng) 20.0 ;#total energy
+set opt(txPower) 0.660 ;#transport energy
+set opt(rxPower) 0.395 ;#receive energy
+set opt(idlePower) 0.035 ;#wait energy
+
+#===================================
+#        Initialization        
+#===================================
 
 # check for boundary parameters and random seed
 if { $opt(x) == 0 || $opt(y) == 0 } {
@@ -38,7 +50,6 @@ if { $opt(x) == 0 || $opt(y) == 0 } {
 
 # create simulator instance
 set ns_   [new Simulator]
-set chan [new $opt(chan)];#Create wireless channel
 
 # set up for hierarchical routing
 $ns_ node-config -addressType hierarchical 3 10 11 11
@@ -59,13 +70,9 @@ set topo   [new Topography]
 
 # define topology
 $topo load_flatgrid $opt(x) $opt(y)
-
 # create God
 #    for HAs and FAs
 create-god [expr $opt(nm) + $opt(nb)]
-
-
-
 #create wired nodes
 set tmpW 0.0
 for {set i 0} {$i < $opt(nw)} {incr i} {
@@ -74,6 +81,7 @@ for {set i 0} {$i < $opt(nw)} {incr i} {
 }
 
 source Lane.wir.tcl
+
 
 # Configure for ForeignAgent and HomeAgent nodes
 $ns_ node-config -mobileIP ON \
@@ -85,12 +93,17 @@ $ns_ node-config -mobileIP ON \
                  -antType $opt(ant) \
                  -propType $opt(prop) \
                  -phyType $opt(netif) \
-                 -channel $chan \
+                 -channelType $opt(chan) \
 		 -topoInstance $topo \
-                 -wiredRouting OFF \
+		-energyModel   $opt(engmodel) \
+		-initialEnergy $opt(initeng) \
+		-txPower       $opt(txPower) \
+		-rxPower       $opt(rxPower) \
+		-idlePower     $opt(idlePower) \
+                 -wiredRouting ON \
 		 -agentTrace ON \
-                 -routerTrace OFF \
-                 -macTrace OFF 
+                 -routerTrace ON \
+                 -macTrace ON 
 
 # Create HA and FA
 set temp 1.0           ;# hierarchical addresses 
@@ -127,7 +140,7 @@ for {set i 0} {$i < $opt(nm)} {incr i} {
     $ragent vehi-num $opt(nm)
     $ragent base-num $opt(nb)
     $ragent nodeID $i
-    $ragent AXIS_ip 1
+#    $ragent AXIS_ip 1
 #    $ragent confmapx $opt(x)
 #    $ragent confmapy $opt(y)
 #    $ragent confmapr $opt(rowc)
@@ -207,5 +220,6 @@ puts "Starting Simulation..."
 
 
 $ns_ run
+
 
 
