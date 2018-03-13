@@ -41,7 +41,7 @@ set ns_   [new Simulator]
 set chan [new $opt(chan)];#Create wireless channel
 
 # set up for hierarchical routing
-$ns_ node-config -addressType hierarchical 3 8 8 16
+$ns_ node-config -addressType hierarchical 3 10 11 11
 
 AddrParams set domain_num_ 3           			;# number of domains
 lappend cluster_num 1 1 1              			;# number of clusters in each domain
@@ -87,7 +87,7 @@ $ns_ node-config -mobileIP ON \
                  -phyType $opt(netif) \
                  -channel $chan \
 		 -topoInstance $topo \
-                 -wiredRouting ON \
+                 -wiredRouting OFF \
 		 -agentTrace ON \
                  -routerTrace OFF \
                  -macTrace OFF 
@@ -99,7 +99,7 @@ for {set i 0} {$i < $opt(nb)} {incr i} {
     $nodeb_($i) random-motion 0
 }
 
-source Lane.bas.bat
+source Lane.bas.tcl
 
 
 
@@ -116,7 +116,7 @@ source Lane.bas.bat
 $ns_ node-config -wiredRouting OFF
 set temp 2.0
 for {set i 0} {$i < $opt(nm)} {incr i} {
-    set node_($i) [$ns_ node $temp.[expr $i + 1]]
+    set node_($i) [$ns_ node $temp.$i]
     set HAaddress [AddrParams addr2id [$nodeb_([expr $i % $opt(nb)]) node-addr]] 
     [$node_($i) set regagent_] set home_agent_ $HAaddress
 
@@ -207,8 +207,5 @@ puts "Starting Simulation..."
 
 
 $ns_ run
-
-
-
 
 
