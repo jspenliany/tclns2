@@ -20,7 +20,7 @@ set opt(cp)             ""                     	;# connection pattern file
 set opt(sc)     	"ns2mobility.tcl"    	       	;# node movement file. 
 
 
-set opt(stop)   	20.0                         	;# time of simulation end
+set opt(stop)   	500.0                         	;# time of simulation end
 
 set opt(ftp1-start)     100.0
 
@@ -30,11 +30,11 @@ set opt(trans_port)	50				;#for transport layer protocol
 #set opt(app_port)	51				;#for application layer protocol
 
 #assign tx_delay for agent sending msg
-set opt(tx_delay)	10.2				;#msg interval
+set opt(tx_delay)	50.2				;#msg interval
 
-set opt(hello_start)	0.2				;# hello will start tx at 15.02
-set opt(wired_start)	[expr $opt(hello_start) + 7.9]  ;# wired will start tx at 18.02		
-set opt(comm_start)	[expr $opt(hello_start) + 4.9]
+set opt(hello_start)	10.2				;# hello will start tx at 15.02
+set opt(wired_start)	[expr $opt(hello_start) + 37.9]  ;# wired will start tx at 18.02		
+set opt(comm_start)	[expr $opt(hello_start) + 25.9]
 
 #set num_bs_nodes       2  ; this is not really used here.
 source "Lane.sce.tcl"
@@ -108,8 +108,8 @@ $ns_ node-config -mobileIP ON \
 		 -topoInstance $topo \
                  -wiredRouting ON \
 		 -agentTrace ON \
-                 -routerTrace ON \
-                 -macTrace ON 
+                 -routerTrace OFF \
+                 -macTrace OFF 
 
 # Create HA and FA
 set temb 1.0           ;# hierarchical addresses 
@@ -133,7 +133,7 @@ source Lane.bas.tcl
 # create a mobilenode that would be moving between HA and FA.
 # note address of MH indicates its in the same domain as HA.
 $ns_ node-config -wiredRouting OFF \
-                 -macTrace ON
+                 -macTrace OFF
 
 set temm 2.0
 for {set i 0} {$i < $opt(nm)} {incr i} {
@@ -164,7 +164,8 @@ source Lane.pat.tcl
 
 for {set i 0} {$i < $opt(nm)} {incr i} {
     set udp_r($i) [new Agent/UDP/TAVRAppAgent]
-    $ns_ attach-agent $node_($i) $udp_r($i)
+#    $ns_ attach-agent $node_($i) $udp_r($i)
+    $node_($i) attach $udp_r($i) $opt(trans_port)
 
     $udp_r($i) node_id		$i
     $udp_r($i) node_type	2
@@ -189,7 +190,8 @@ for {set i 0} {$i < $opt(nm)} {incr i} {
 for {set i 0} {$i < $opt(comm_id)} {incr i} {
 #    puts "$i current IP is $tmpW.$i"
     set udp_s($i) [new Agent/UDP/TAVRAppAgent]
-    $ns_ attach-agent $nodew_($i) $udp_s($i)
+#    $ns_ attach-agent $nodew_($i) $udp_s($i)
+    $nodew_($i) attach $udp_s($i) $opt(trans_port)
 
     $udp_s($i) node_id		$i
 
